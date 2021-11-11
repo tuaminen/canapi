@@ -102,9 +102,9 @@ Napi::Value CanApi::SendMessage(const Napi::CallbackInfo& info) {
   int32_t dlc = info[2].As<Napi::Number>();
 
   canStatus status = canWrite(this->handle, identifier, data, dlc, 0);
-  CanApi::CheckCanStatus("SendMessage::canWrite", status);
+  bool sendOk = CanApi::CheckCanStatus("SendMessage::canWrite", status);
 
-  return Napi::Boolean::New(env, true);
+  return Napi::Boolean::New(env, sendOk);
 }
 
 Napi::Value CanApi::Open(const Napi::CallbackInfo& info) {
