@@ -18,7 +18,7 @@
           {
             "sources": ["cppsrc/binding.cpp", "cppsrc/can_api.cpp"],
             "include_dirs": ["<(module_root_dir)/linuxcan/include"],
-            "libraries": ["<(module_root_dir)/linuxcan/canlib/libcanlib.so.1.6.0"]
+            "libraries": ["<(module_root_dir)/linuxcan/canlib/libcanlib.so.1.9.2"]
           }
         ]
       ],
