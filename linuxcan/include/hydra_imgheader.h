@@ -1,4 +1,7 @@
 /*
+ *             Copyright 2021 by Kvaser AB, Molndal, Sweden
+ *                         http://www.kvaser.com
+ *
  * This software is dual licensed under the following two licenses:
  * BSD-new and GPLv2. You may use either one. See the included
  * COPYING file for details.
@@ -58,26 +61,33 @@
  * -----------------------------------------------------------------------------
  */
 
-/**
- * \file obsolete.h
- * \brief Definitions which are retained for compatibility.
- * \details
-*/
+#ifndef HYDRA_IMGHEADER_H_
+#define HYDRA_IMGHEADER_H_
 
+#define IMG_TYPE_SYSTEM_CONTAINER       4
 
-#ifndef _OBSOLETE_H_
-#define _OBSOLETE_H_
+typedef struct {
+  unsigned int headerType:32;
+  unsigned int hdLength:32;
+  unsigned int imgLength:32;
+  unsigned int imgType:16;
+  unsigned int imgStatus:16;
+  unsigned int eanHi:32;
+  unsigned int eanLo:32;
+  unsigned int version:32;
+  unsigned int sequenceNumber:32;
+  unsigned int prgAddr:32;
+  unsigned int runAddr:32;
+  unsigned int runImgAddr:32;
+  unsigned int copy:32;
+  unsigned int imgCrc:32;
+  unsigned int hdCrc:32;
+} HydraImgHeader;
 
+typedef struct {
+  unsigned int imgStartAddr;
+  unsigned int length;
+  unsigned int addr;
+} ImageContainerInfo;
 
-/**
- * \name retained for compatibility
- * \warning Obsolete!
- * @{
- */
-#define canCHANNEL_CAP_DIAGNOSTICS      0x10000000L               ///< Obsolete, use canCHANNEL_CAP_CANTEGRITY instead.
-#define canCHANNEL_CAP_CAN_DIAGNOSTICS  canCHANNEL_CAP_RESERVED_2 ///< Obsolete, can report CAN diagnostics. Only used by LAPcan driver.
-#define canCHANNEL_CAP_REMOTE           canCHANNEL_CAP_RESERVED_1 ///< Obsolete, use \ref canCHANNEL_CAP_REMOTE_ACCESS or \ref canCHANNELDATA_IS_REMOTE
-
-/** @} */
-
-#endif /* _OBSOLETE_H_ */
+#endif

@@ -70,7 +70,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 static void check(char* id, canStatus stat)
 {
   if (stat != canOK) {
@@ -103,7 +102,8 @@ int main(int argc, char* argv[])
   beta = canGetVersionEx(canVERSION_CANLIB32_BETA);
   if (beta) {
     sprintf(betaString, "BETA");
-  } else {
+  }
+  else {
     betaString[0] = '\0';
   }
   canlibVersion = canGetVersionEx(canVERSION_CANLIB32_PRODVER);
@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
     (void) canGetChannelData(i, canCHANNELDATA_CUST_CHANNEL_NAME,
                              custChanName, sizeof(custChanName));
 
-    printf("ch %2.1d: %-22s\t%x-%05x-%05x-%x, s/n %u, v%u.%u.%u %s (%s v%d.%d.%d)\n",
+    printf("ch %2.1d: %-35s\t%x-%05x-%05x-%x, s/n %u, v%u.%u.%u %s (%s v%d.%d.%d)\n",
            i, name,
            (ean[1] >> 12), ((ean[1] & 0xfff) << 8) | ((ean[0] >> 24) & 0xff),
            (ean[0] >> 4) & 0xfffff, (ean[0] & 0x0f),

@@ -75,7 +75,8 @@ CFLAGS  += $(ccflags-y)
 CFLAGS  += -I. -I../include
 
 # GCC 4.6 and below does not allow initializing of struct with '{ 0 }'
-GCC_VERSION_LTEQ_4_6 := $(shell expr `gcc -dumpversion | cut -f1-2 -d'.'` \<= 4.6)
+GCC_VERSION_LTEQ_4_6 := $(shell expr $$(gcc -dumpfullversion -dumpversion \
+                          | awk -F. '{print ($$2+100*$$1)}') \<= 406)
 ifeq ($(GCC_VERSION_LTEQ_4_6),1)
 CFLAGS += -Wno-missing-field-initializers
 endif
@@ -85,6 +86,7 @@ LIBCFLAGS = $(CFLAGS) -D_REENTRANT -fPIC
 LDFLAGS = -lc -pthread
 
 SRCS := canlib.c
+SRCS += canlib_channel_list.c
 SRCS += linkedlist.c
 SRCS += VCanFunctions.c
 SRCS += VCanFuncUtil.c
@@ -94,6 +96,7 @@ SRCS += md5.c
 SRCS += txe.c
 SRCS += txe_fopen.c
 SRCS += dlc.c
+SRCS += tq_util.c
 
 OBJS := $(patsubst %.c, %.o, $(SRCS))
 OTHERDEPS := ../include/canlib.h
@@ -101,7 +104,7 @@ DEPS := $(patsubst %.c, %.d, $(SRCS))
 
 
 ifeq ($(KV_DEBUG_ON),1)
-  KV_XTRA_CFLAGS_DEBUG= -D_DEBUG=1 -DDEBUG=1
+  KV_XTRA_CFLAGS_DEBUG= -D_DEBUG=1 -DDEBUG=1 -O0 -g
   IS_DEBUG=Debug: $(KV_XTRA_CFLAGS_DEBUG)
   CFLAGS += $(KV_XTRA_CFLAGS_DEBUG)
 else
@@ -154,7 +157,7 @@ uninstall:
 	$(MAKE) -C examples uninstall
 	rm -f /usr/lib/$(LIBNAME) /usr/lib/$(SONAME) /usr/lib/$(LIBRARY)
 	/sbin/ldconfig
-	rm -f /usr/include/canlib.h /usr/include/canstat.h /usr/include/obsolete.h
+	rm -f /usr/include/canlib.h /usr/include/canstat.h /usr/include/obsolete.h /usr/include/bus_params_tq.h
 	rm -rf /usr/doc/canlib
 
 clean:

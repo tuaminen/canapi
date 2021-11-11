@@ -61,63 +61,30 @@
 ** -----------------------------------------------------------------------------
 */
 
-#ifndef VCANSCRIPTFUNCTIONS_H
-#define VCANSCRIPTFUNCTIONS_H
+/*
+** Description:
+**  Debug output
+** -----------------------------------------------------------------------------
+*/
 
-/*  Kvaser Linux Canlib VCan layer functions used in Scriptss */
+#ifndef _COMMON_DEBUG_H
+#define _COMMON_DEBUG_H
 
-#include "canlib_data.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+#  ifndef PRINTF
+#    define PRINTF(x)
+#  endif /* PRINTF */
+#  ifndef DEBUGPRINTF
+#    define DEBUGPRINTF PRINTF
+#  endif /* DEBUGPRINTF */
 
-
-canStatus vCanScript_stop(HandleData *hData, int slotNo, int mode);
-canStatus vCanScript_start(HandleData *hData, int slotNo);
-canStatus vCanScript_load_file(HandleData *hData, int slotNo,
-                               char *hostFileName);
-canStatus vCanScript_unload(HandleData *hData, int slotNo);
-canStatus vCanScript_load_file_on_device(HandleData *hData,  
-                                         int slotNo,
-                                         char *localFile); 
-canStatus vCanScript_send_event(HandleData *hData,
-                                int slotNo,
-                                int eventType,
-                                int eventNo,
-                                unsigned int data); 
-void vCanScript_envvar_init(void);
-kvEnvHandle vCanScript_envvar_open(HandleData *hData, 
-                                   const char* envvarName,
-                                   int *envvarType,
-                                   int *envvarSize);
-canStatus vCanScript_envvar_close(HandleData * hData, int envvarIdx);
-canStatus vCanScript_envvar_set_int(HandleData * hData, int envvarIdx, int val);
-canStatus vCanScript_envvar_get_int(HandleData * hData, int envvarIdx, int *val);
-canStatus vCanScript_envvar_set_float(HandleData * hData, int envvarIdx, float val);
-canStatus vCanScript_envvar_get_float(HandleData * hData, int envvarIdx, float *val);
-canStatus vCanScript_envvar_set_data(HandleData * hData,
-                                     int envvarIdx,
-                                     const void *buf,
-                                     int start_index,
-                                     int data_len);
-canStatus vCanScript_envvar_get_data(HandleData * hData,
-                                     int envvarIdx,
-                                     void *buf,
-                                     int start_index,
-                                     int data_len);
-canStatus vCanScript_request_text(HandleData *hData,
-                                  unsigned int slot,
-                                  unsigned int request);
-                                  
-void clear_print_text_data(HandleData * hData);
-                                  
-canStatus vCanScript_get_text(HandleData *hData,
-                              int  *slot,
-                              unsigned long *time,
-                              unsigned int  *flags,
-                              char *buf,
-                              size_t bufsize); 
-canStatus vCanScript_status(HandleData *hData, 
-                            int  slot,
-                            unsigned int *status);
+#ifdef __cplusplus
+}
+#endif
 
 
-#endif  /* VCANSCRIPTFUNCTIONS_H */
+#endif /* _COMMON_DEBUG_H */
+

@@ -61,63 +61,59 @@
 ** -----------------------------------------------------------------------------
 */
 
-#ifndef VCANSCRIPTFUNCTIONS_H
-#define VCANSCRIPTFUNCTIONS_H
+/*
+ * Kvaser Linux Canlib
+ * Set bus parameters using setBusParams and read them back
+ */
 
-/*  Kvaser Linux Canlib VCan layer functions used in Scriptss */
-
-#include "canlib_data.h"
-
-
-
-canStatus vCanScript_stop(HandleData *hData, int slotNo, int mode);
-canStatus vCanScript_start(HandleData *hData, int slotNo);
-canStatus vCanScript_load_file(HandleData *hData, int slotNo,
-                               char *hostFileName);
-canStatus vCanScript_unload(HandleData *hData, int slotNo);
-canStatus vCanScript_load_file_on_device(HandleData *hData,  
-                                         int slotNo,
-                                         char *localFile); 
-canStatus vCanScript_send_event(HandleData *hData,
-                                int slotNo,
-                                int eventType,
-                                int eventNo,
-                                unsigned int data); 
-void vCanScript_envvar_init(void);
-kvEnvHandle vCanScript_envvar_open(HandleData *hData, 
-                                   const char* envvarName,
-                                   int *envvarType,
-                                   int *envvarSize);
-canStatus vCanScript_envvar_close(HandleData * hData, int envvarIdx);
-canStatus vCanScript_envvar_set_int(HandleData * hData, int envvarIdx, int val);
-canStatus vCanScript_envvar_get_int(HandleData * hData, int envvarIdx, int *val);
-canStatus vCanScript_envvar_set_float(HandleData * hData, int envvarIdx, float val);
-canStatus vCanScript_envvar_get_float(HandleData * hData, int envvarIdx, float *val);
-canStatus vCanScript_envvar_set_data(HandleData * hData,
-                                     int envvarIdx,
-                                     const void *buf,
-                                     int start_index,
-                                     int data_len);
-canStatus vCanScript_envvar_get_data(HandleData * hData,
-                                     int envvarIdx,
-                                     void *buf,
-                                     int start_index,
-                                     int data_len);
-canStatus vCanScript_request_text(HandleData *hData,
-                                  unsigned int slot,
-                                  unsigned int request);
-                                  
-void clear_print_text_data(HandleData * hData);
-                                  
-canStatus vCanScript_get_text(HandleData *hData,
-                              int  *slot,
-                              unsigned long *time,
-                              unsigned int  *flags,
-                              char *buf,
-                              size_t bufsize); 
-canStatus vCanScript_status(HandleData *hData, 
-                            int  slot,
-                            unsigned int *status);
+#include <canlib.h>
+#include <stdio.h>
 
 
-#endif  /* VCANSCRIPTFUNCTIONS_H */
+static void check(char* id, canStatus stat)
+{
+  if (stat != canOK) {
+    char buf[50];
+    buf[0] = '\0';
+    canGetErrorText(stat, buf, sizeof(buf));
+    printf("%s: failed, stat=%d (%s)\n", id, (int)stat, buf);
+  }
+}
+
+int main(int argc, char *argv[])
+{
+  canStatus stat = -1;
+  int j;
+  canHandle hnd[2];
+  long freq;
+  unsigned int tseg1, tseg2, sjw, noSamp, syncmode;
+
+  (void)argc;
+  (void)argv;
+
+  canInitializeLibrary();
+
+  for(j = 0 ; j < 2 ; j++) {
+    hnd[j] = canOpenChannel(j, canOPEN_EXCLUSIVE | canOPEN_REQUIRE_EXTENDED);
+    if ((canStatus)hnd[j] < 0) {
+      printf("canOpenChannel (%d) failed\n", j);
+      return -1;
+    }
+    stat = canSetBusParams(hnd[j], 500000L, 5, 2, 1, 1, 0);
+    check("canSetBusParams", stat);
+  }
+
+  printf("\n");
+  for (j = 0; j < 2; j++) {
+    stat = canGetBusParams(hnd[j], &freq, &tseg1, &tseg2, &sjw, &noSamp, &syncmode);
+    printf("hnd[%d]:freq %ld, tseg1 %u, tseg2 %u, sjw %u, noSamp %u, syncmode %u\n",
+           j, freq, tseg1, tseg2, sjw, noSamp, syncmode);
+    check("canGetBusParams", stat);
+  }
+
+  stat = canUnloadLibrary();
+
+  check("canUnloadLibrary", stat);
+
+  return 0;
+}

@@ -77,6 +77,7 @@
 #include <linux/types.h>
 #include <linux/tty.h>
 #include <linux/completion.h>
+#include <linux/time.h>
 
 #include "canIfData.h"
 #include "kcan_ioctl.h"
@@ -233,6 +234,9 @@ typedef struct VCanChanData
     unsigned int            capabilities;
     unsigned int            capabilities_mask;
 
+    uint64_t                capabilities_ex;
+    uint64_t                capabilities_ex_mask;
+
     VCanBusStatistics       busStats;
 
     struct VCanCardData    *vCard;
@@ -265,7 +269,11 @@ typedef struct VCanCardNumberData
 typedef struct VCanDriverData
 {
     int                       noOfDevices;
+#ifdef _LINUX_TIME64_H
+    struct timespec64         startTime;
+#else
     struct timeval            startTime;
+#endif
     char                      *deviceName;
     struct VCanHWInterface    *hwIf;
     struct VCanCardData       *canCards;
@@ -292,6 +300,9 @@ typedef struct VCanCardData
 
     uint32_t                timeHi;
     uint32_t                usPerTick;
+
+    void                    *retdataPtr;
+    int                      retdataSize;
 
     /* Ports and addresses */
     volatile unsigned int    cardPresent;
@@ -330,8 +341,8 @@ typedef struct
 /* File pointer specific data */
 typedef struct VCanOpenFileNode {
     struct completion        ioctl_completion;
-    VCanReceiveData          rcv;
-    VCanReceiveData          rcv_text;   // printf texts
+    VCanReceiveData          *rcv;
+    VCanReceiveData          *rcv_text;   // printf texts
     unsigned char            transId;
     struct file             *filp;
     struct VCanChanData     *chanData;
@@ -368,6 +379,10 @@ typedef struct VCanHWInterface {
     int (*initAllDevices)       (void);
     int (*setBusParams)         (VCanChanData *chd, VCanBusParams *par);
     int (*getBusParams)         (VCanChanData *chd, VCanBusParams *par);
+
+    int (*setBusParamsTq)       (VCanChanData *chd, VCanBusParamsTq *par);
+    int (*getBusParamsTq)       (VCanChanData *chd, VCanBusParamsTq *par);
+
     int (*setOutputMode)        (VCanChanData *chd, int silent);
     int (*setTranceiverMode)    (VCanChanData *chd, int linemode, int resnet);
     int (*busOn)                (VCanChanData *chd);
@@ -415,6 +430,7 @@ typedef struct VCanHWInterface {
     int (*special_ioctl_handler) (VCanOpenFileNode *fileNodePtr, unsigned int ioctl_cmd, unsigned long arg);
     int (*memoConfigMode)       (const VCanChanData *chd, int interval);
     int (*kvDeviceGetMode)      (const VCanChanData *chd, int *mode);
+    int (*kvDeviceGetClockFreqMhz)      (const VCanChanData *chd, unsigned int *freq_mhz);
     int (*kvDeviceSetMode)      (const VCanChanData *chd, int mode);
     int (*kvFileGetCount)       (const VCanChanData *chd, int *count);
     int (*kvFileGetName)        (const VCanChanData *chd, int fileNo, char *name, int namelen);
@@ -434,6 +450,8 @@ typedef struct VCanHWInterface {
     int (*script_envvar_control) (const VCanChanData *chd, KCAN_IOCTL_ENVVAR_GET_INFO_T *sc);
     int (*script_envvar_put)     (const VCanChanData *chd, KCAN_IOCTL_SCRIPT_SET_ENVVAR_T *sc);
     int (*script_envvar_get)     (const VCanChanData *chd, KCAN_IOCTL_SCRIPT_GET_ENVVAR_T *sc);
+    int (*getOutputMode)        (VCanChanData *chd, int *silent);
+    int (*deviceFlashProg)      (const VCanChanData *vChan, KCAN_FLASH_PROG *fp);
 } VCanHWInterface;
 
 #define SKIP_ERROR_EVENT 0
@@ -468,7 +486,11 @@ extern struct file_operations fops;
 
 
 /* Functions */
+#ifdef _LINUX_TIME64_H
+void            kv_do_gettimeofday (struct timespec64 *tv);
+#else
 void            kv_do_gettimeofday (struct timeval *tv);
+#endif
 int             vCanInitData(VCanCardData *chd);
 int             vCanTime(VCanCardData *vCard, uint64_t *time);
 int             vCanDispatchEvent(VCanChanData *chd, VCAN_EVENT *e);
@@ -480,9 +502,15 @@ int             vCanInit(VCanDriverData *, unsigned);
 void            vCanCleanup(VCanDriverData *);
 int             vCanGetCardInfo(VCanCardData *, VCAN_IOCTL_CARD_INFO *);
 int             vCanGetCardInfo2(VCanCardData *, KCAN_IOCTL_CARD_INFO_2 *);
+#ifdef _LINUX_TIME64_H
+struct timespec64 vCanCalc_dt(struct timespec64 *start); //returns now-start
+#else
 struct timeval  vCanCalc_dt(struct timeval *start); //returns now-start
+#endif
 void            vCanCardRemoved(VCanChanData *chd);
 int             vCanPopReceiveBuffer (VCanReceiveData *rcv);
 int             vCanPushReceiveBuffer (VCanReceiveData *rcv);
 
+//returns 1 if chd  supports busparams tq, otherwize 0
+int             vCanSupportsBusParamsTq(VCanChanData *chd);
 #endif /* _VCAN_OS_IF_H_ */

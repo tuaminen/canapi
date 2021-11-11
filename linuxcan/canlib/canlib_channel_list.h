@@ -1,5 +1,5 @@
 /*
-**             Copyright 2017 by Kvaser AB, Molndal, Sweden
+**            Copyright 2017-2018 by Kvaser AB, Molndal, Sweden
 **                         http://www.kvaser.com
 **
 ** This software is dual licensed under the following two licenses:
@@ -61,63 +61,29 @@
 ** -----------------------------------------------------------------------------
 */
 
-#ifndef VCANSCRIPTFUNCTIONS_H
-#define VCANSCRIPTFUNCTIONS_H
 
-/*  Kvaser Linux Canlib VCan layer functions used in Scriptss */
+#ifndef __CANLIB_CHANNEL_LIST_H
+#define __CANLIB_CHANNEL_LIST_H
 
-#include "canlib_data.h"
+/*
+returns a list of channels, sorted on ean and then on snr.
+virtual channels are always last. 
+*/
 
+typedef struct {
+  char     mknod_name[32];       //i.e /dev/mhydra0
+  char     official_name[32];
+  uint64_t snr;
+  uint64_t ean;
+  uint32_t number_on_card;
+  uint32_t number_on_driver;
+} ccl_channel;
 
+typedef struct {
+  uint32_t    n_channel;
+  ccl_channel channel[128];
+} ccl_class;
 
-canStatus vCanScript_stop(HandleData *hData, int slotNo, int mode);
-canStatus vCanScript_start(HandleData *hData, int slotNo);
-canStatus vCanScript_load_file(HandleData *hData, int slotNo,
-                               char *hostFileName);
-canStatus vCanScript_unload(HandleData *hData, int slotNo);
-canStatus vCanScript_load_file_on_device(HandleData *hData,  
-                                         int slotNo,
-                                         char *localFile); 
-canStatus vCanScript_send_event(HandleData *hData,
-                                int slotNo,
-                                int eventType,
-                                int eventNo,
-                                unsigned int data); 
-void vCanScript_envvar_init(void);
-kvEnvHandle vCanScript_envvar_open(HandleData *hData, 
-                                   const char* envvarName,
-                                   int *envvarType,
-                                   int *envvarSize);
-canStatus vCanScript_envvar_close(HandleData * hData, int envvarIdx);
-canStatus vCanScript_envvar_set_int(HandleData * hData, int envvarIdx, int val);
-canStatus vCanScript_envvar_get_int(HandleData * hData, int envvarIdx, int *val);
-canStatus vCanScript_envvar_set_float(HandleData * hData, int envvarIdx, float val);
-canStatus vCanScript_envvar_get_float(HandleData * hData, int envvarIdx, float *val);
-canStatus vCanScript_envvar_set_data(HandleData * hData,
-                                     int envvarIdx,
-                                     const void *buf,
-                                     int start_index,
-                                     int data_len);
-canStatus vCanScript_envvar_get_data(HandleData * hData,
-                                     int envvarIdx,
-                                     void *buf,
-                                     int start_index,
-                                     int data_len);
-canStatus vCanScript_request_text(HandleData *hData,
-                                  unsigned int slot,
-                                  unsigned int request);
-                                  
-void clear_print_text_data(HandleData * hData);
-                                  
-canStatus vCanScript_get_text(HandleData *hData,
-                              int  *slot,
-                              unsigned long *time,
-                              unsigned int  *flags,
-                              char *buf,
-                              size_t bufsize); 
-canStatus vCanScript_status(HandleData *hData, 
-                            int  slot,
-                            unsigned int *status);
+canStatus ccl_get_channel_list (ccl_class *self);
 
-
-#endif  /* VCANSCRIPTFUNCTIONS_H */
+#endif

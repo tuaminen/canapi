@@ -1,5 +1,5 @@
 /*
-**             Copyright 2017 by Kvaser AB, Molndal, Sweden
+**             Copyright 2018 by Kvaser AB, Molndal, Sweden
 **                         http://www.kvaser.com
 **
 ** This software is dual licensed under the following two licenses:
@@ -61,63 +61,32 @@
 ** -----------------------------------------------------------------------------
 */
 
-#ifndef VCANSCRIPTFUNCTIONS_H
-#define VCANSCRIPTFUNCTIONS_H
+/*
+ Helper module for setting busparams TQ
+*/
 
-/*  Kvaser Linux Canlib VCan layer functions used in Scriptss */
+#ifndef _TQ_UTIL_H
+#define _TQ_UTIL_H
 
-#include "canlib_data.h"
+#include "canlib.h"
 
+/*returns -1 if bad arb-parameters, otherwize 0*/
+int tqu_check_nominal (const kvBusParamsTq self);
 
+/*returns -1 if bad brs-parameters, otherwize 0*/
+int tqu_check_data  (const kvBusParamsTq self);
 
-canStatus vCanScript_stop(HandleData *hData, int slotNo, int mode);
-canStatus vCanScript_start(HandleData *hData, int slotNo);
-canStatus vCanScript_load_file(HandleData *hData, int slotNo,
-                               char *hostFileName);
-canStatus vCanScript_unload(HandleData *hData, int slotNo);
-canStatus vCanScript_load_file_on_device(HandleData *hData,  
-                                         int slotNo,
-                                         char *localFile); 
-canStatus vCanScript_send_event(HandleData *hData,
-                                int slotNo,
-                                int eventType,
-                                int eventNo,
-                                unsigned int data); 
-void vCanScript_envvar_init(void);
-kvEnvHandle vCanScript_envvar_open(HandleData *hData, 
-                                   const char* envvarName,
-                                   int *envvarType,
-                                   int *envvarSize);
-canStatus vCanScript_envvar_close(HandleData * hData, int envvarIdx);
-canStatus vCanScript_envvar_set_int(HandleData * hData, int envvarIdx, int val);
-canStatus vCanScript_envvar_get_int(HandleData * hData, int envvarIdx, int *val);
-canStatus vCanScript_envvar_set_float(HandleData * hData, int envvarIdx, float val);
-canStatus vCanScript_envvar_get_float(HandleData * hData, int envvarIdx, float *val);
-canStatus vCanScript_envvar_set_data(HandleData * hData,
-                                     int envvarIdx,
-                                     const void *buf,
-                                     int start_index,
-                                     int data_len);
-canStatus vCanScript_envvar_get_data(HandleData * hData,
-                                     int envvarIdx,
-                                     void *buf,
-                                     int start_index,
-                                     int data_len);
-canStatus vCanScript_request_text(HandleData *hData,
-                                  unsigned int slot,
-                                  unsigned int request);
-                                  
-void clear_print_text_data(HandleData * hData);
-                                  
-canStatus vCanScript_get_text(HandleData *hData,
-                              int  *slot,
-                              unsigned long *time,
-                              unsigned int  *flags,
-                              char *buf,
-                              size_t bufsize); 
-canStatus vCanScript_status(HandleData *hData, 
-                            int  slot,
-                            unsigned int *status);
+/* translates bitrate constants to busparameters valid for a device with an 80 MHz oscillator*/
+canStatus tqu_translate_bitrate_constant (int freq, kvBusParamsTq *nominal);
+canStatus tqu_translate_bitrate_constant_fd (int freqA, int freqD, kvBusParamsTq *arbitration, kvBusParamsTq *data);
 
+/*returns 0 if successful*/
+int tqu_set_busparam_values (kvBusParamsTq *busparam, int tq, int phase1, int phase2, int sjw, int prop, int prescaler);
 
-#endif  /* VCANSCRIPTFUNCTIONS_H */
+/* Validate and rescale busparameters to the frequency of the device clock*/
+canStatus tqu_validate_busparameters (const CanHandle hnd, kvBusParamsTq *busparam);
+canStatus tqu_validate_busparameters_fd (const CanHandle hnd);
+
+/* Temporary function with hardcoded limits for devices with support for the tq API*/
+canStatus get_tq_limits (int hw_type, kvBusParamLimits *bus_param_limits, int has_FD);
+#endif

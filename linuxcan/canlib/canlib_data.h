@@ -89,25 +89,25 @@ typedef LinkedList HandleList;
 struct CANops;
 
 
-typedef struct text_element_t { 
+typedef struct text_element_t {
   unsigned long  timeStamp;
   unsigned char  slot;          // valid if flags = DM_FLAG_PRINTF
-  unsigned short flags;         // DM_FLAG_PRINTF, DM_FLAG_DEBUG, DM_FLAG_ERROR 
+  unsigned short flags;         // DM_FLAG_PRINTF, DM_FLAG_DEBUG, DM_FLAG_ERROR
   unsigned short total_payload;
-  char           *payload;      
+  char           *payload;
   unsigned short index;
-  
+
   unsigned short state;
-  struct text_element_t *next;    
+  struct text_element_t *next;
 } text_element_t;
- 
+
 typedef struct {
   text_element_t  *text_receiving;  // used to collect the text from the driver (state = 0 or 1)
   text_element_t  *received_text_list;  // complete texts are moved from text_receiving to here (state = 2 or 3)
-  text_element_t  *last_received_text;  // point to the last received element in received_text_list; 
-  int             number_of_received_texts; // in received_text_list 
+  text_element_t  *last_received_text;  // point to the last received element in received_text_list;
+  int             number_of_received_texts; // in received_text_list
 } print_text_t;
-    
+
 
 // This struct is associated with each handle
 // returned by canOpenChannel
@@ -169,6 +169,12 @@ typedef struct CANOps
                             unsigned int *tseg2, unsigned int *sjw, unsigned int *noSamp,
                             long *freq_brs, unsigned int *tseg1_brs, unsigned int *tseg2_brs,
                             unsigned int *sjw_brs, unsigned int *syncmode);
+
+
+  canStatus (*setBusParamsTq)(HandleData *hData, const kvBusParamsTq *nominell, const kvBusParamsTq *data);
+  canStatus (*getBusParamsTq)(HandleData *hData, kvBusParamsTq *nominell, kvBusParamsTq *data);
+
+
   canStatus (*reqBusStats) (HandleData *hData);
   canStatus (*getBusStats) (HandleData *hData, canBusStatistics *stat);
   canStatus (*read)(HandleData *, long *, void *, unsigned int *,
@@ -200,14 +206,14 @@ typedef struct CANOps
   canStatus (*kvScriptLoadFileOnDevice) (HandleData *, int, char *);
   canStatus (*kvScriptUnload) (HandleData *, int);
   canStatus (*kvScriptSendEvent) (HandleData *, int, int, int, unsigned int);
-  kvEnvHandle (*kvScriptEnvvarOpen) (HandleData *, char *, int *, int *);
+  kvEnvHandle (*kvScriptEnvvarOpen) (HandleData *, const char *, int *, int *);
   canStatus (*kvScriptEnvvarClose) (HandleData *, int);
-  canStatus (*kvScriptEnvvarSetInt) (HandleData *, int, int); 
+  canStatus (*kvScriptEnvvarSetInt) (HandleData *, int, int);
   canStatus (*kvScriptEnvvarGetInt) (HandleData *, int, int *);
   canStatus (*kvScriptEnvvarSetFloat) (HandleData *, int, float);
   canStatus (*kvScriptEnvvarGetFloat) (HandleData *, int, float *);
-  canStatus (*kvScriptEnvvarSetData) (kvEnvHandle, void *, int, int);
-  canStatus (*kvScriptEnvvarGetData) (kvEnvHandle, void *, int, int);
+  canStatus (*kvScriptEnvvarSetData) (HandleData *, int, const void *, int, int);
+  canStatus (*kvScriptEnvvarGetData) (HandleData *, int, void *, int, int);
   canStatus (*kvScriptRequestText)  (HandleData *, unsigned int, unsigned int);
   canStatus (*kvScriptGetText)  (HandleData *, int *, unsigned long *, unsigned int *, char *, size_t);
 
@@ -244,6 +250,7 @@ typedef struct CANOps
   canStatus (*setClockOffset)(HandleData *hData, HandleData *hFrom);
   canStatus (*getCardInfo)(HandleData *hData, VCAN_IOCTL_CARD_INFO *ci);
   canStatus (*getCardInfo2)(HandleData *hData, KCAN_IOCTL_CARD_INFO_2 *ci2);
+  canStatus (*getOpenMode)(HandleData *hData);
 } CANOps;
 
 #endif
