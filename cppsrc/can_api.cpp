@@ -101,7 +101,7 @@ Napi::Value CanApi::SendMessage(const Napi::CallbackInfo& info) {
   uint8_t* data = info[1].As<Napi::Buffer<uint8_t>>().Data();
   int32_t dlc = info[2].As<Napi::Number>();
 
-  canStatus status = canWrite(this->handle, identifier, data, dlc, 0);
+  canStatus status = canWriteWait(this->handle, identifier, data, dlc, canMSG_EXT, 1000);
   bool sendOk = CanApi::CheckCanStatus("SendMessage::canWrite", status);
 
   return Napi::Boolean::New(env, sendOk);
